@@ -543,4 +543,129 @@ const vehicles = {
     }
   }
 
+};const makerNames = {
+  toyota: "トヨタ",
+  honda: "ホンダ",
+  nissan: "日産",
+  mazda: "マツダ",
+  subaru: "スバル",
+  suzuki: "スズキ",
+  daihatsu: "ダイハツ",
+  mitsubishi: "三菱",
+  lexus: "レクサス",
+  bmw: "BMW",
+  mercedes: "メルセデス・ベンツ",
+  audi: "アウディ",
+  volkswagen: "フォルクスワーゲン",
+  volvo: "ボルボ",
+  tesla: "テスラ"
 };
+
+const maker = document.getElementById("maker");
+const model = document.getElementById("model");
+const grade = document.getElementById("grade");
+const fuelEff = document.getElementById("fuelEff");
+const fuelEstimate = document.getElementById("fuelEstimate");
+
+maker.innerHTML = "";
+
+Object.keys(vehicles).forEach(key => {
+  const option = document.createElement("option");
+  option.value = key;
+  option.textContent = makerNames[key] || key;
+  maker.appendChild(option);
+});
+
+function updateModels() {
+  const models = vehicles[maker.value] || {};
+
+  model.innerHTML = "";
+
+  Object.keys(models).forEach(name => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    model.appendChild(option);
+  });
+
+  updateGrades();
+}
+
+function updateGrades() {
+  const grades = vehicles[maker.value]?.[model.value] || {};
+
+  grade.innerHTML = "";
+
+  Object.entries(grades).forEach(([name, fuel]) => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    option.dataset.fuel = fuel;
+    grade.appendChild(option);
+  });
+
+  updateFuel();
+}
+
+function updateFuel() {
+  const fuel = Number(grade.selectedOptions[0]?.dataset.fuel || 0);
+
+  if (fuel > 0) {
+    fuelEstimate.textContent = fuel.toFixed(1) + " km/L";
+    fuelEff.value = fuel;
+  } else {
+    fuelEstimate.textContent = "EV";
+  }
+}
+
+maker.addEventListener("change", updateModels);
+model.addEventListener("change", updateGrades);
+grade.addEventListener("change", updateFuel);
+
+function yen(n) {
+  return "¥" + Math.round(n).toLocaleString("ja-JP");
+}
+
+function calc() {
+  const distance = Number(document.getElementById("distance").value);
+  const fuel = Number(document.getElementById("fuelEff").value);
+  const fuelPrice = Number(document.getElementById("fuelPrice").value);
+  const tax = Number(document.getElementById("tax").value);
+  const insurance = Number(document.getElementById("insurance").value);
+  const inspection = Number(document.getElementById("inspection").value);
+  const parking = Number(document.getElementById("parking").value);
+  const loan = Number(document.getElementById("loan").value);
+
+  const gasoline = fuel > 0
+    ? (distance / fuel) * fuelPrice
+    : 0;
+
+  const parkingYear = parking * 12;
+  const loanYear = loan * 12;
+
+  const annual =
+    gasoline +
+    tax +
+    insurance +
+    inspection +
+    parkingYear +
+    loanYear;
+
+  document.getElementById("annual").textContent = yen(annual);
+  document.getElementById("monthly").textContent = yen(annual / 12);
+  document.getElementById("daily").textContent = yen(annual / 365);
+  document.getElementById("perkm").textContent =
+    distance > 0 ? yen(annual / distance) : "¥0";
+  document.getElementById("fiveyear").textContent = yen(annual * 5);
+
+  document.getElementById("fuel").textContent = yen(gasoline);
+  document.getElementById("taxOut").textContent = yen(tax);
+  document.getElementById("insOut").textContent = yen(insurance);
+  document.getElementById("inspOut").textContent = yen(inspection);
+  document.getElementById("parkOut").textContent = yen(parkingYear);
+  document.getElementById("loanOut").textContent = yen(loanYear);
+}
+
+updateModels();
+calc();
+</script>
